@@ -9,7 +9,7 @@ public class PostService {
     private final RestTemplate restTemplate = new RestTemplate();
 
     public String getPosts() {
-        String url = "https://jsonplaceholder.typicode.com/posts";
+        String url = "https://jsonplaceholder.typicode.com/posts?_limit=5";
         return restTemplate.getForObject(url, String.class);
     }
 }
