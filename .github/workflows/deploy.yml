@@ -20,6 +20,9 @@ jobs:
       GHCR_USERNAME: ${{ secrets.GHCR_USERNAME }}
       GHCR_PAT: ${{ secrets.GHCR_PAT }}
       CORS_ALLOWED_ORIGINS: ${{ secrets.CORS_ALLOWED_ORIGINS }}
+      SPRING_DATASOURCE_URL: ${{ secrets.SPRING_DATASOURCE_URL }}
+      SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
+      SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
 
     steps:
       - name: Checkout code
@@ -45,6 +48,9 @@ jobs:
           cd /opt/java-spring-boot &&
           echo '$GHCR_PAT' | docker login ghcr.io -u '$GHCR_USERNAME' --password-stdin &&
           export CORS_ALLOWED_ORIGINS='$CORS_ALLOWED_ORIGINS' &&
+          export SPRING_DATASOURCE_URL='$SPRING_DATASOURCE_URL' &&
+          export SPRING_DATASOURCE_USERNAME='$SPRING_DATASOURCE_USERNAME' &&
+          export SPRING_DATASOURCE_PASSWORD='$SPRING_DATASOURCE_PASSWORD' &&
           docker compose pull &&
           docker compose up -d &&
           docker image prune -f
