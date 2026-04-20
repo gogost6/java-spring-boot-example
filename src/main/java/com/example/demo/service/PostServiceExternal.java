@@ -7,8 +7,9 @@ import org.springframework.web.client.RestTemplate;
 
 import com.example.demo.model.Post;
 
+
 @Service
-public class PostService {
+public class PostServiceExternal {
 
     private final RestTemplate restTemplate = new RestTemplate();
 
