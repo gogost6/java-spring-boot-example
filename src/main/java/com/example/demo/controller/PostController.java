@@ -7,8 +7,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.entity.Post;
-import com.example.demo.repository.PostRepository;
-import com.example.demo.service.PostServiceExternal;
 
 @RestController
 @RequestMapping("/api/posts")
