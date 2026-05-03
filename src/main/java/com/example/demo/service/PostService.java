@@ -3,6 +3,7 @@ package com.example.demo.service;
 import com.example.demo.entity.Post;
 import com.example.demo.repository.PostRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +20,7 @@ public class PostService {
         return postRepository.findAll();
     }
 
-    public Post createPost(Post post) {
+    public Post createPost(@RequestBody Post post) {
         return postRepository.save(post);
     }
 

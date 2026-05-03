@@ -2,7 +2,9 @@ package com.example.demo.controller;
 
 import java.util.List;
 
+import com.example.demo.dto.CreatePostRequest;
 import com.example.demo.service.PostService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,7 +26,8 @@ public class PostController {
     }
 
     @PostMapping
-    public Post createPost(@RequestBody Post post) {
+    public Post createPost(@Valid @RequestBody CreatePostRequest request) {
+        Post post = new Post(request.title(), request.body());
         return postService.createPost(post);
     }
 
