@@ -2,62 +2,47 @@ package com.example.demo.controller;
 
 import java.util.List;
 
+import com.example.demo.service.PostService;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.entity.Post;
 import com.example.demo.repository.PostRepository;
 import com.example.demo.service.PostServiceExternal;
 
 @RestController
+@RequestMapping("/api/posts")
 public class PostController {
 
-    private final PostServiceExternal postServiceExternal;
-    private final PostRepository postRepository;
+    private final PostService postService;
 
-    public PostController(PostRepository postRepository, PostServiceExternal postServiceExternal) {
-        this.postRepository = postRepository;
-        this.postServiceExternal = postServiceExternal;
+    public PostController(PostService postService) {
+        this.postService = postService;
     }
 
-    @GetMapping("/api/posts")
+    @GetMapping
     public List<Post> getPosts() {
-        return postRepository.findAll();
+        return postService.getAllPosts();
     }
 
-    @PostMapping("/api/posts")
+    @PostMapping
     public Post createPost(@RequestBody Post post) {
-        return postRepository.save(post);
+        return postService.createPost(post);
     }
 
-    @PutMapping("/api/posts/{id}")
+    @PutMapping("/{id}")
     public ResponseEntity<Post> updatePost(@PathVariable Long id, @RequestBody Post updated) {
-        return postRepository.findById(id)
-                .map(post -> {
-                    post.setTitle(updated.getTitle());
-                    post.setBody(updated.getBody());
-                    return ResponseEntity.ok(postRepository.save(post));
-                })
+        return postService.updatePost(id, updated)
+                .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @DeleteMapping("/api/posts/{id}")
+    @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Long id) {
-        if (!postRepository.existsById(id)) {
+        if (!postService.deletePost(id)) {
             return ResponseEntity.notFound().build();
         }
-        postRepository.deleteById(id);
-        return ResponseEntity.noContent().build();
-    }
 
-    @GetMapping("/api/external-posts")
-    public List<com.example.demo.model.Post> getExternalPosts() {
-        return postServiceExternal.getPosts();
+        return ResponseEntity.noContent().build();
     }
 }
