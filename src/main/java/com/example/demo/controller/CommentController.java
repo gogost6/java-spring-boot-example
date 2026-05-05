@@ -1,7 +1,9 @@
 package com.example.demo.controller;
 
+import com.example.demo.dto.CreateCommentRequest;
 import com.example.demo.entity.Comment;
 import com.example.demo.service.CommentService;
+import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,13 +28,13 @@ public class CommentController {
     }
 
     @PostMapping("/{post_id}")
-    public Comment addComment(@PathVariable Long post_id, @RequestBody Comment comment) {
-        return commentService.create(post_id, comment.getContent());
+    public Comment addComment(@PathVariable Long post_id, @Valid @RequestBody CreateCommentRequest comment) {
+        return commentService.create(post_id, comment.content());
     }
 
     @PutMapping("/{comment_id}")
-    public Comment updateComment(@PathVariable Long comment_id, @RequestBody Comment comment) {
-        return commentService.update(comment_id, comment.getContent());
+    public Comment updateComment(@PathVariable Long comment_id, @Valid @RequestBody CreateCommentRequest comment) {
+        return commentService.update(comment_id, comment.content());
     }
 
     @DeleteMapping("/{comment_id}")
