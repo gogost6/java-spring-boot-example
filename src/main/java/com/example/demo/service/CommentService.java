@@ -25,8 +25,8 @@ public class CommentService {
         return this.commentRepository.findByPostId(post.getId());
     }
 
-    public Comment create(Post postId, String content) {
-        Post post = this.postRepository.findById(postId.getId()).orElseThrow();
+    public Comment create(Long postId, String content) {
+        Post post = this.postRepository.findById(postId).orElseThrow();
         Comment comment = new Comment(post, content);
 
         return commentRepository.save(comment);
