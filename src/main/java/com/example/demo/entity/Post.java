@@ -1,11 +1,9 @@
 package com.example.demo.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
+
+import java.util.List;
 
 @Entity
 @Table(name = "posts")
@@ -19,6 +17,8 @@ public class Post {
     private String title;
     @NotBlank
     private String body;
+    @OneToMany(mappedBy = "post")
+    private List<Comment> comments;
 
     public Post() {
     }
