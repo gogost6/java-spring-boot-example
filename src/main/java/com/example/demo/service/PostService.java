@@ -20,6 +20,10 @@ public class PostService {
         return postRepository.findAll();
     }
 
+    public List<Post> getAllPostsWithComments() {
+        return postRepository.findAllWithComments();
+    }
+
     public Post createPost(@RequestBody Post post) {
         return postRepository.save(post);
     }

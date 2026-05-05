@@ -45,7 +45,7 @@ public class CatController {
 
         return ResponseEntity
                 .status(response.getStatusCode())
-                .contentType(response.getHeaders().getContentType())
+                .contentType(Objects.requireNonNull(response.getHeaders().getContentType()))
                 .body(response.getBody());
     }
 }

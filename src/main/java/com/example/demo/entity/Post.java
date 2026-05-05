@@ -18,7 +18,7 @@ public class Post {
     @NotBlank
     private String body;
     @OneToMany(mappedBy = "post")
-    private List<Comment> comments;
+    public List<Comment> comments;
 
     public Post() {
     }
