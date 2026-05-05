@@ -1,7 +1,6 @@
 package com.example.demo.controller;
 
 import com.example.demo.entity.Comment;
-import com.example.demo.entity.Post;
 import com.example.demo.service.CommentService;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,13 +15,18 @@ public class CommentController {
         this.commentService = commentService;
     }
 
-    @GetMapping("/{postId}")
-    public List<Comment> getByPostId(@PathVariable Long postId) {
-        return this.commentService.getCommentsByPostId(postId);
+    @GetMapping("/{post_id}/post")
+    public List<Comment> getAllByPostId(@PathVariable Long post_id) {
+        return this.commentService.getCommentsByPostId(post_id);
+    }
+
+    @GetMapping("/{comment_id}")
+    public Comment getCommentById(@PathVariable Long comment_id) {
+        return this.commentService.getCommentById(comment_id);
     }
 
     @PostMapping("/{post_id}")
-    public Comment addComment(@PathVariable Post post_id, @RequestBody Comment comment) {
+    public Comment addComment(@PathVariable Long post_id, @RequestBody Comment comment) {
         return commentService.create(post_id, comment.getContent());
     }
 

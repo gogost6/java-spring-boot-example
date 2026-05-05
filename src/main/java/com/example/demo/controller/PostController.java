@@ -3,6 +3,8 @@ package com.example.demo.controller;
 import java.util.List;
 
 import com.example.demo.dto.CreatePostRequest;
+import com.example.demo.entity.Comment;
+import com.example.demo.service.CommentService;
 import com.example.demo.service.PostService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -15,14 +17,21 @@ import com.example.demo.entity.Post;
 public class PostController {
 
     private final PostService postService;
+    private final CommentService commentService;
 
-    public PostController(PostService postService) {
+    public PostController(PostService postService, CommentService commentService) {
         this.postService = postService;
+        this.commentService = commentService;
     }
 
     @GetMapping
-    public List<Post> getPosts() {
+    public List<Post> getAllPosts() {
         return postService.getAllPosts();
+    }
+
+    @GetMapping("/{post_id}/comments")
+    public List<Comment> getCommentsByPostId(@PathVariable Long post_id) {
+        return commentService.getCommentsByPostId(post_id);
     }
 
     @PostMapping
