@@ -5,11 +5,13 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Objects;
 
 @RestController
+@RequestMapping("/api/cat")
 public class CatController {
     private final CatService catService;
 
@@ -18,7 +20,7 @@ public class CatController {
     }
 
 
-    @GetMapping("/api/random-cat")
+    @GetMapping("/random-cat")
     public ResponseEntity<byte[]> getCat() {
         ResponseEntity<byte[]> response = catService.getRandomCatImage();
 
@@ -29,7 +31,7 @@ public class CatController {
                 .body(response.getBody());
     }
 
-    @GetMapping("/api/random-cat-by-tag/{tag}")
+    @GetMapping("/random-cat-by-tag/{tag}")
     public ResponseEntity<byte[]> getRandomCatByTag(@PathVariable String tag) {
         ResponseEntity<byte[]> response = catService.getRandomCatByTag(tag);
 
@@ -39,7 +41,7 @@ public class CatController {
                 .body(response.getBody());
     }
 
-    @GetMapping("/api/random-cat-gif")
+    @GetMapping("/random-cat-gif")
     public ResponseEntity<byte[]> getRandomCatGif() {
         ResponseEntity<byte[]> response = catService.getRandomCatGif();
 
