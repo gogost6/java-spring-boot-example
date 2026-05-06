@@ -48,6 +48,10 @@ public class AuthService {
 
 
     public User updateEmail(String email, String newEmail) {
+        if (email.equals(newEmail)) {
+            throw new IllegalStateException("Old email same as new email!");
+        }
+
         User user = authRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalStateException("Invalid email!"));
         user.setEmail(newEmail);
@@ -56,11 +60,15 @@ public class AuthService {
     }
 
     public User updatePassword(String email, String oldPassword, String newPassword) {
+        if (oldPassword.equals(newPassword)) {
+            throw new IllegalStateException("New password must be different from old password!");
+        }
+
         User user = authRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalStateException("Invalid email!"));
 
         if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
-            throw new IllegalStateException("Invalid email or password!");
+            throw new IllegalStateException("Old password doesn't match!");
         }
 
         String hashedPassword = passwordEncoder.encode(newPassword);

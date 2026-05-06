@@ -6,6 +6,7 @@ import com.example.demo.entity.User;
 import com.example.demo.service.AuthService;
 import com.example.demo.service.JwtService;
 import jakarta.validation.Valid;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -30,6 +31,26 @@ public class AuthController {
     @PostMapping("/login")
     public AuthResponse login(@Valid @RequestBody AuthRequest authRequest) {
         User user = authService.login(authRequest);
+        String token = jwtService.generateToken(user);
+
+        return new AuthResponse(token);
+    }
+
+    @PutMapping("/email")
+    public AuthResponse updateEmail(Authentication authentication, @RequestParam String newEmail) {
+        String email = authentication.getName();
+        User user = authService.updateEmail(email, newEmail);
+        String token = jwtService.generateToken(user);
+
+        return new AuthResponse(token);
+    }
+
+    @PutMapping("/password")
+    public AuthResponse updatePassword(Authentication authentication,
+                               @RequestParam String oldPassword,
+                               @RequestParam String newPassword) {
+        String email = authentication.getName();
+        User user = authService.updatePassword(email, oldPassword, newPassword);
         String token = jwtService.generateToken(user);
 
         return new AuthResponse(token);
