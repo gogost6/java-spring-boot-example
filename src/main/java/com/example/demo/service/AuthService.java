@@ -1,0 +1,71 @@
+package com.example.demo.service;
+
+import com.example.demo.dto.AuthRequest;
+import com.example.demo.entity.User;
+import com.example.demo.repository.AuthRepository;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import java.util.Optional;
+
+@Service
+public class AuthService {
+    private final AuthRepository authRepository;
+    private final PasswordEncoder passwordEncoder;
+
+    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder) {
+        this.authRepository = authRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
+
+    public User register(AuthRequest authRequest) {
+        String email = authRequest.email();
+        String password = authRequest.password();
+        Optional<User> user = authRepository.findByEmail(email);
+
+        if (user.isPresent()) {
+            throw new IllegalStateException("User already exists!");
+        }
+
+        String hashedPassword = passwordEncoder.encode(password);
+
+        User userEntity = new User(email, hashedPassword);
+        return authRepository.save(userEntity);
+    }
+
+    public User login(AuthRequest authRequest) {
+        String email = authRequest.email();
+        String password = authRequest.password();
+        User user = authRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Invalid email or password!"));
+
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new IllegalStateException("Invalid email or password!");
+        }
+
+        return user;
+    }
+
+
+    public User updateEmail(String email, String newEmail) {
+        User user = authRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Invalid email!"));
+        user.setEmail(newEmail);
+
+        return authRepository.save(user);
+    }
+
+    public User updatePassword(String email, String oldPassword, String newPassword) {
+        User user = authRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("Invalid email!"));
+
+        if (!passwordEncoder.matches(oldPassword, user.getPassword())) {
+            throw new IllegalStateException("Invalid email or password!");
+        }
+
+        String hashedPassword = passwordEncoder.encode(newPassword);
+        user.setPassword(hashedPassword);
+
+        return authRepository.save(user);
+    }
+}
