@@ -8,6 +8,8 @@ import com.example.demo.service.CommentService;
 import com.example.demo.service.PostService;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.demo.entity.Post;
@@ -35,21 +37,19 @@ public class PostController {
     }
 
     @PostMapping
-    public Post createPost(@Valid @RequestBody CreatePostRequest request) {
-        Post post = new Post(request.title(), request.body());
-        return postService.createPost(post);
+    public Post createPost(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CreatePostRequest request) {
+        return postService.createPost(jwt.getSubject(), request);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Post> updatePost(@PathVariable Long id, @RequestBody Post updated) {
-        return postService.updatePost(id, updated)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Void> updatePost(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CreatePostRequest updated) {
+        postService.updatePost(id, jwt.getSubject(), updated);
+        return ResponseEntity.ok().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletePost(@PathVariable Long id) {
-        if (!postService.deletePost(id)) {
+    public ResponseEntity<Void> deletePost(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
+        if (!postService.deletePost(id, jwt.getSubject())) {
             return ResponseEntity.notFound().build();
         }
 

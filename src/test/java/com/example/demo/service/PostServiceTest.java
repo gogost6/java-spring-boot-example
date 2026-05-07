@@ -1,6 +1,10 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.CreatePostRequest;
 import com.example.demo.entity.Post;
+import com.example.demo.entity.User;
+import com.example.demo.repository.AuthRepository;
+import com.example.demo.repository.CommentRepository;
 import com.example.demo.repository.PostRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -20,6 +24,12 @@ class PostServiceTest {
     @Mock
     PostRepository postRepository;
 
+    @Mock
+    AuthRepository authRepository;
+
+    @Mock
+    CommentRepository commentRepository;
+
     @InjectMocks
     PostService postService;
 
@@ -37,73 +47,139 @@ class PostServiceTest {
     }
 
     @Test
-    void createPost_shouldSavePost() {
-        Post post = new Post("Title", "Body");
-        post.setId(1L);
-        Post savedPost = new Post("Title", "Body");
-        savedPost.setId(2L);
+    void createPost_shouldSavePostWithOwner() {
+        User owner = new User("owner@mail.com", "hashed-password");
+        CreatePostRequest request = new CreatePostRequest("Title", "Body");
 
-        when(postRepository.save(post)).thenReturn(savedPost);
+        when(authRepository.findByEmail("owner@mail.com"))
+                .thenReturn(Optional.of(owner));
 
-        Post result = postService.createPost(post);
+        when(postRepository.save(any(Post.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
-        assertNotNull(result.getId());
+        Post result = postService.createPost("owner@mail.com", request);
+
         assertEquals("Title", result.getTitle());
-        verify(postRepository).save(post);
+        assertEquals("Body", result.getBody());
+        assertEquals(owner, result.getOwner());
+
+        verify(authRepository).findByEmail("owner@mail.com");
+        verify(postRepository).save(any(Post.class));
     }
 
     @Test
-    void updatePost_shouldUpdatePost_whenPostExists() {
+    void createPost_shouldThrow_whenUserDoesNotExist() {
+        CreatePostRequest request = new CreatePostRequest("Title", "Body");
+
+        when(authRepository.findByEmail("missing@mail.com"))
+                .thenReturn(Optional.empty());
+
+        assertThrows(IllegalStateException.class, () ->
+                postService.createPost("missing@mail.com", request)
+        );
+
+        verify(postRepository, never()).save(any(Post.class));
+    }
+
+    @Test
+    void updatePost_shouldUpdate_whenUserIsOwner() {
+        User owner = new User("owner@mail.com", "hashed-password");
+
         Post existingPost = new Post("Old title", "Old body");
         existingPost.setId(1L);
+        existingPost.setOwner(owner);
 
-        Post updatedPost = new Post("New title", "New body");
+        CreatePostRequest request = new CreatePostRequest("New title", "New body");
 
-        when(postRepository.findById(1L)).thenReturn(Optional.of(existingPost));
-        when(postRepository.save(existingPost)).thenReturn(existingPost);
+        when(postRepository.findById(1L))
+                .thenReturn(Optional.of(existingPost));
 
-        Optional<Post> result = postService.updatePost(1L, updatedPost);
+        when(postRepository.save(existingPost))
+                .thenReturn(existingPost);
 
-        assertTrue(result.isPresent());
-        assertEquals("New title", result.get().getTitle());
-        assertEquals("New body", result.get().getBody());
+        when(authRepository.findByEmail("owner@mail.com"))
+                .thenReturn(Optional.of(owner));
+
+        Post result = postService.updatePost(1L, "owner@mail.com", request);
+
+        assertEquals("New title", result.getTitle());
+        assertEquals("New body", result.getBody());
 
         verify(postRepository).findById(1L);
         verify(postRepository).save(existingPost);
     }
 
     @Test
-    void updatePost_shouldReturnEmpty_whenPostDoesNotExist() {
-        Post updatedPost = new Post("New title", "New body");
+    void updatePost_shouldThrow_whenUserIsNotOwner() {
+        User owner = new User("owner@mail.com", "hashed-password");
 
-        when(postRepository.findById(999L)).thenReturn(Optional.empty());
+        Post existingPost = new Post("Old title", "Old body");
+        existingPost.setId(1L);
+        existingPost.setOwner(owner);
 
-        Optional<Post> result = postService.updatePost(999L, updatedPost);
+        CreatePostRequest request = new CreatePostRequest("New title", "New body");
 
-        assertTrue(result.isEmpty());
+        when(postRepository.findById(1L))
+                .thenReturn(Optional.of(existingPost));
+
+        assertThrows(IllegalStateException.class, () ->
+                postService.updatePost(1L, "other@mail.com", request)
+        );
+
+        verify(postRepository).findById(1L);
+        verify(postRepository, never()).save(any(Post.class));
+    }
+
+    @Test
+    void updatePost_shouldThrow_whenPostDoesNotExist() {
+        CreatePostRequest request = new CreatePostRequest("New title", "New body");
+
+        when(postRepository.findById(999L))
+                .thenReturn(Optional.empty());
+
+        assertThrows(IllegalStateException.class, () ->
+                postService.updatePost(999L, "owner@mail.com", request)
+        );
+
         verify(postRepository).findById(999L);
         verify(postRepository, never()).save(any(Post.class));
     }
 
     @Test
-    void deletePost_shouldDeleteAndReturnTrue_whenPostExists() {
-        when(postRepository.existsById(1L)).thenReturn(true);
+    void deletePost_shouldDelete_whenUserIsOwner() {
+        User owner = new User("owner@mail.com", "hashed-password");
+        Post existingPost = new Post("Title", "Body");
+        existingPost.setId(1L);
+        existingPost.setOwner(owner);
 
-        boolean result = postService.deletePost(1L);
+        when(authRepository.findByEmail("owner@mail.com"))
+                .thenReturn(Optional.of(owner));
 
-        assertTrue(result);
-        verify(postRepository).existsById(1L);
+        when(postRepository.findById(1L))
+                .thenReturn(Optional.of(existingPost));
+
+        postService.deletePost(1L, "owner@mail.com");
+
+        verify(postRepository).findById(1L);
         verify(postRepository).deleteById(1L);
     }
 
     @Test
-    void deletePost_shouldReturnFalse_whenPostDoesNotExist() {
-        when(postRepository.existsById(999L)).thenReturn(false);
+    void deletePost_shouldThrow_whenUserIsNotOwner() {
+        User owner = new User("owner@mail.com", "hashed-password");
 
-        boolean result = postService.deletePost(999L);
+        Post existingPost = new Post("Title", "Body");
+        existingPost.setId(1L);
+        existingPost.setOwner(owner);
 
-        assertFalse(result);
-        verify(postRepository).existsById(999L);
-        verify(postRepository, never()).deleteById(anyLong());
+        when(postRepository.findById(1L))
+                .thenReturn(Optional.of(existingPost));
+
+        assertThrows(IllegalStateException.class, () ->
+                postService.deletePost(1L, "other@mail.com")
+        );
+
+        verify(postRepository).findById(1L);
+        verify(postRepository, never()).delete(any(Post.class));
     }
 }

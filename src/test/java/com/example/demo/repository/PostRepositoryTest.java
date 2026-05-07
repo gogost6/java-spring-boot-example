@@ -1,6 +1,7 @@
 package com.example.demo.repository;
 
 import com.example.demo.entity.Post;
+import com.example.demo.entity.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,25 +19,47 @@ public class PostRepositoryTest {
     @Autowired
     PostRepository postRepository;
 
+    @Autowired
+    AuthRepository authRepository;
+
+    @Autowired
+    CommentRepository commentRepository;
+
     @BeforeEach
     void setUp() {
+        commentRepository.deleteAll();
         postRepository.deleteAll();
+        authRepository.deleteAll();
+    }
+
+    private User createOwner() {
+        return authRepository.save(
+                new User("owner" + System.nanoTime() + "@mail.com", "hashed-password")
+        );
+    }
+
+    private Post createPost(String title, String body) {
+        User owner = createOwner();
+
+        Post post = new Post(title, body);
+        post.setOwner(owner);
+
+        return postRepository.save(post);
     }
 
     @Test
     void save_shouldPersistPost() {
-        Post post = new Post("Test title", "Test Body");
-
-        Post saved = postRepository.save(post);
+        Post saved = createPost("Test title", "Test Body");
 
         Assertions.assertNotNull(saved.getId());
         Assertions.assertEquals("Test title", saved.getTitle());
+        Assertions.assertNotNull(saved.getOwner());
     }
 
     @Test
     void findAll_shouldReturnAllPosts() {
-        postRepository.save(new Post("Title 1", "Body 1"));
-        postRepository.save(new Post("Title 2", "Body 2"));
+        createPost("Title 1", "Body 1");
+        createPost("Title 2", "Body 2");
 
         List<Post> posts = postRepository.findAll();
 
@@ -45,7 +68,7 @@ public class PostRepositoryTest {
 
     @Test
     void findById_shouldReturnPost() {
-        Post post = postRepository.save(new Post("Title", "Body"));
+        Post post = createPost("Title", "Body");
 
         Optional<Post> found = postRepository.findById(post.getId());
 
@@ -55,7 +78,7 @@ public class PostRepositoryTest {
 
     @Test
     void update_shouldModifyPost() {
-        Post post = postRepository.save(new Post("Old title", "Old body"));
+        Post post = createPost("Old title", "Old body");
 
         post.setTitle("New title");
         postRepository.save(post);
@@ -67,7 +90,7 @@ public class PostRepositoryTest {
 
     @Test
     void delete_shouldRemovePost() {
-        Post post = postRepository.save(new Post("Title", "Body"));
+        Post post = createPost("Title", "Body");
 
         postRepository.delete(post);
 

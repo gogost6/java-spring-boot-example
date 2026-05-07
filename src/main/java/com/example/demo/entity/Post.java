@@ -19,11 +19,20 @@ public class Post {
     private String body;
     @OneToMany(mappedBy = "post")
     public List<Comment> comments;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private User owner;
 
     public Post() {
     }
 
     public Post(String title, String body) {
+        this.title = title;
+        this.body = body;
+    }
+
+    public Post(User owner, String title, String body) {
+        this.owner = owner;
         this.title = title;
         this.body = body;
     }
@@ -48,5 +57,13 @@ public class Post {
 
     public void setBody(String body) {
         this.body = body;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
     }
 }

@@ -1,29 +1,29 @@
 package com.example.demo.controller;
 
+import com.example.demo.config.SecurityConfig;
 import com.example.demo.entity.Comment;
 import com.example.demo.entity.Post;
 import com.example.demo.service.CommentService;
 import com.example.demo.service.PostService;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
 import java.util.List;
-import java.util.Optional;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
 
 @WebMvcTest(controllers = PostController.class)
-@AutoConfigureMockMvc(addFilters = false)
-@ExtendWith(MockitoExtension.class)
+@AutoConfigureMockMvc
+@Import(SecurityConfig.class)
 class PostControllerTest {
 
     @Autowired
@@ -52,11 +52,12 @@ class PostControllerTest {
 
     @Test
     void createPost_returnsPost() {
-        when(postService.createPost(any(Post.class)))
+        when(postService.createPost(eq("owner@mail.com"), any()))
                 .thenReturn(new Post("New title", "New body"));
 
         mvc.post()
                 .uri("/api/posts")
+                .with(jwt().jwt(jwt -> jwt.subject("owner@mail.com")))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {
@@ -71,12 +72,13 @@ class PostControllerTest {
     }
 
     @Test
-    void updatePost_whenExists_returnsPost() {
-        when(postService.updatePost(eq(1L), any(Post.class)))
-                .thenReturn(Optional.of(new Post("Updated", "Updated body")));
+    void updatePost_returnsOk() {
+        when(postService.updatePost(eq(1L), eq("owner@mail.com"), any()))
+                .thenReturn(new Post("Updated", "Updated body"));
 
         mvc.put()
                 .uri("/api/posts/1")
+                .with(jwt().jwt(jwt -> jwt.subject("owner@mail.com")))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("""
                         {
@@ -85,47 +87,19 @@ class PostControllerTest {
                         }
                         """)
                 .assertThat()
-                .hasStatusOk()
-                .bodyJson()
-                .extractingPath("$.title").isEqualTo("Updated");
+                .hasStatusOk();
     }
 
     @Test
-    void updatePost_whenMissing_returns404() {
-        when(postService.updatePost(eq(999L), any(Post.class)))
-                .thenReturn(Optional.empty());
-
-        mvc.put()
-                .uri("/api/posts/999")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content("""
-                        {
-                          "title": "Updated",
-                          "body": "Updated body"
-                        }
-                        """)
-                .assertThat()
-                .hasStatus(404);
-    }
-
-    @Test
-    void deletePost_whenExists_returns204() {
-        when(postService.deletePost(1L)).thenReturn(true);
+    void deletePost_returns204() {
+        when(postService.deletePost(eq(1L), eq("owner@mail.com")))
+                .thenReturn(true);
 
         mvc.delete()
                 .uri("/api/posts/1")
+                .with(jwt().jwt(jwt -> jwt.subject("owner@mail.com")))
                 .assertThat()
                 .hasStatus(204);
-    }
-
-    @Test
-    void deletePost_whenMissing_returns404() {
-        when(postService.deletePost(999L)).thenReturn(false);
-
-        mvc.delete()
-                .uri("/api/posts/999")
-                .assertThat()
-                .hasStatus(404);
     }
 
     @Test

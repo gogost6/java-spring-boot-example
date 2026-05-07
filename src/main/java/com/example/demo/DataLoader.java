@@ -1,6 +1,8 @@
 package com.example.demo;
 
 import com.example.demo.entity.Comment;
+import com.example.demo.entity.User;
+import com.example.demo.repository.AuthRepository;
 import com.example.demo.repository.CommentRepository;
 import org.jspecify.annotations.NonNull;
 import org.springframework.boot.CommandLineRunner;
@@ -14,17 +16,20 @@ public class DataLoader implements CommandLineRunner {
 
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final AuthRepository authRepository;
 
-    public DataLoader(PostRepository postRepository, CommentRepository commentRepository) {
+    public DataLoader(PostRepository postRepository, CommentRepository commentRepository,  AuthRepository authRepository) {
         this.postRepository = postRepository;
         this.commentRepository = commentRepository;
+        this.authRepository = authRepository;
     }
 
     @Override
     public void run(String @NonNull ... args) {
         if (postRepository.count() == 0) {
-            Post postOne = postRepository.save(new Post("First post", "Hello from PostgreSQL"));
-            Post postTwo = postRepository.save(new Post("Second post", "Spring Boot is connected"));
+            User user = authRepository.findByEmail("example@gmail.com").orElseThrow();
+            Post postOne = postRepository.save(new Post(user, "First post", "Hello from PostgreSQL"));
+            Post postTwo = postRepository.save(new Post(user, "Second post", "Spring Boot is connected"));
             commentRepository.save(new Comment(postOne, "First comment"));
             commentRepository.save(new Comment(postTwo, "Second comment"));
         }
