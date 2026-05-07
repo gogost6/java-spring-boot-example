@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.spec.SecretKeySpec;
 import java.time.Instant;
+import java.util.List;
 
 @Service
 public class JwtService {
@@ -23,12 +24,18 @@ public class JwtService {
     public String generateToken(User user) {
         Instant now = Instant.now();
 
+        List<String> roles = user.getRoles()
+                .stream()
+                .map(role -> "ROLE_" + role.name())
+                .toList();
+
         JwtClaimsSet claims = JwtClaimsSet.builder()
                 .issuer("demo-api")
                 .issuedAt(now)
                 .expiresAt(now.plusSeconds(60 * 60))
                 .subject(user.getEmail())
                 .claim("userId", user.getId())
+                .claim("roles", roles)
                 .build();
 
         JwsHeader header = JwsHeader.with(MacAlgorithm.HS256).build();

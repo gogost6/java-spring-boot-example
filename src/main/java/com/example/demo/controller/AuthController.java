@@ -2,10 +2,12 @@ package com.example.demo.controller;
 
 import com.example.demo.dto.AuthRequest;
 import com.example.demo.dto.AuthResponse;
+import com.example.demo.entity.Role;
 import com.example.demo.entity.User;
 import com.example.demo.service.AuthService;
 import com.example.demo.service.JwtService;
 import jakarta.validation.Valid;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,5 +56,14 @@ public class AuthController {
         String token = jwtService.generateToken(user);
 
         return new AuthResponse(token);
+    }
+
+    @PutMapping("/users/{email}/roles/{role}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public User addRoleToUser(
+            @PathVariable String email,
+            @PathVariable Role role
+    ) {
+        return authService.addRole(email, role);
     }
 }

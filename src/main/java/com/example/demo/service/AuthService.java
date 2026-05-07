@@ -1,12 +1,14 @@
 package com.example.demo.service;
 
 import com.example.demo.dto.AuthRequest;
+import com.example.demo.entity.Role;
 import com.example.demo.entity.User;
 import com.example.demo.repository.AuthRepository;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
+import java.util.Set;
 
 @Service
 public class AuthService {
@@ -29,7 +31,11 @@ public class AuthService {
 
         String hashedPassword = passwordEncoder.encode(password);
 
-        User userEntity = new User(email, hashedPassword);
+        Set<Role> roles = authRepository.count() == 0
+                ? Set.of(Role.ADMIN, Role.USER)
+                : Set.of(Role.USER);
+        User userEntity = new User(email, hashedPassword, roles);
+
         return authRepository.save(userEntity);
     }
 
@@ -73,6 +79,15 @@ public class AuthService {
 
         String hashedPassword = passwordEncoder.encode(newPassword);
         user.setPassword(hashedPassword);
+
+        return authRepository.save(user);
+    }
+
+    public User addRole(String email, Role role) {
+        User user = authRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("User not found"));
+
+        user.getRoles().add(role);
 
         return authRepository.save(user);
     }

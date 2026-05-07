@@ -2,6 +2,7 @@ package com.example.demo.service;
 
 import com.example.demo.dto.CreatePostRequest;
 import com.example.demo.entity.Post;
+import com.example.demo.entity.Role;
 import com.example.demo.entity.User;
 import com.example.demo.repository.AuthRepository;
 import com.example.demo.repository.CommentRepository;
@@ -14,6 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
@@ -48,7 +50,7 @@ class PostServiceTest {
 
     @Test
     void createPost_shouldSavePostWithOwner() {
-        User owner = new User("owner@mail.com", "hashed-password");
+        User owner = new User("owner@mail.com", "hashed-password", Set.of(Role.USER));
         CreatePostRequest request = new CreatePostRequest("Title", "Body");
 
         when(authRepository.findByEmail("owner@mail.com"))
@@ -83,7 +85,7 @@ class PostServiceTest {
 
     @Test
     void updatePost_shouldUpdate_whenUserIsOwner() {
-        User owner = new User("owner@mail.com", "hashed-password");
+        User owner = new User("owner@mail.com", "hashed-password", Set.of(Role.USER));
 
         Post existingPost = new Post("Old title", "Old body");
         existingPost.setId(1L);
@@ -111,7 +113,7 @@ class PostServiceTest {
 
     @Test
     void updatePost_shouldThrow_whenUserIsNotOwner() {
-        User owner = new User("owner@mail.com", "hashed-password");
+        User owner = new User("owner@mail.com", "hashed-password", Set.of(Role.USER));
 
         Post existingPost = new Post("Old title", "Old body");
         existingPost.setId(1L);
@@ -147,7 +149,7 @@ class PostServiceTest {
 
     @Test
     void deletePost_shouldDelete_whenUserIsOwner() {
-        User owner = new User("owner@mail.com", "hashed-password");
+        User owner = new User("owner@mail.com", "hashed-password", Set.of(Role.USER));
         Post existingPost = new Post("Title", "Body");
         existingPost.setId(1L);
         existingPost.setOwner(owner);
@@ -166,7 +168,7 @@ class PostServiceTest {
 
     @Test
     void deletePost_shouldThrow_whenUserIsNotOwner() {
-        User owner = new User("owner@mail.com", "hashed-password");
+        User owner = new User("owner@mail.com", "hashed-password", Set.of(Role.USER));
 
         Post existingPost = new Post("Title", "Body");
         existingPost.setId(1L);

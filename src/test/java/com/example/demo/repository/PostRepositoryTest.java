@@ -1,6 +1,7 @@
 package com.example.demo.repository;
 
 import com.example.demo.entity.Post;
+import com.example.demo.entity.Role;
 import com.example.demo.entity.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,6 +12,7 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -34,7 +36,7 @@ public class PostRepositoryTest {
 
     private User createOwner() {
         return authRepository.save(
-                new User("owner" + System.nanoTime() + "@mail.com", "hashed-password")
+                new User("owner" + System.nanoTime() + "@mail.com", "hashed-password", Set.of(Role.USER))
         );
     }
 
