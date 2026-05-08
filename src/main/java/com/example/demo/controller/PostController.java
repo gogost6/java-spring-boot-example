@@ -3,6 +3,7 @@ package com.example.demo.controller;
 import java.util.List;
 
 import com.example.demo.dto.CreatePostRequest;
+import com.example.demo.dto.PostResponse;
 import com.example.demo.entity.Comment;
 import com.example.demo.service.CommentService;
 import com.example.demo.service.PostService;
@@ -27,8 +28,15 @@ public class PostController {
     }
 
     @GetMapping
-    public List<Post> getAllPosts() {
-        return postService.getAllPosts();
+    public List<PostResponse> getAllPosts() {
+        return postService.getAllPosts()
+                .stream()
+                .map(p -> new PostResponse(
+                        p.getId(),
+                        p.getTitle(),
+                        p.getBody(),
+                        p.getOwner().getEmail()))
+                .toList();
     }
 
     @GetMapping("/{post_id}/comments")
@@ -37,8 +45,9 @@ public class PostController {
     }
 
     @PostMapping
-    public Post createPost(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CreatePostRequest request) {
-        return postService.createPost(jwt.getSubject(), request);
+    public PostResponse createPost(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CreatePostRequest request) {
+        Post post = postService.createPost(jwt.getSubject(), request);
+        return new PostResponse(post.getId(), post.getTitle(), post.getBody(), post.getOwner().getEmail());
     }
 
     @PutMapping("/{id}")
