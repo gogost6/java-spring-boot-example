@@ -39,6 +39,12 @@ public class PostController {
                 .toList();
     }
 
+    @GetMapping("/{post_id}")
+    public PostResponse getPostById(@PathVariable Long post_id) {
+        Post post = postService.getById(post_id);
+        return new PostResponse(post.getId(), post.getTitle(), post.getBody(), post.getOwner().getEmail());
+    }
+
     @GetMapping("/{post_id}/comments")
     public List<Comment> getCommentsByPostId(@PathVariable Long post_id) {
         return commentService.getCommentsByPostId(post_id);
@@ -58,10 +64,7 @@ public class PostController {
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePost(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt) {
-        if (!postService.deletePost(id, jwt.getSubject())) {
-            return ResponseEntity.notFound().build();
-        }
-
+        postService.deletePost(id, jwt.getSubject());
         return ResponseEntity.noContent().build();
     }
 }
