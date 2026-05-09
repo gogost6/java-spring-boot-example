@@ -10,7 +10,11 @@ import java.util.List;
 public class CatService {
 
     private final RestTemplate restTemplate = new RestTemplate();
-    private final String apiUrl = "https://cataas.com";
+    private final CatTagsService catTagsService;
+
+    public CatService(CatTagsService catTagsService) {
+        this.catTagsService = catTagsService;
+    }
 
     private ResponseEntity<byte[]> fetchImage(String path) {
         HttpHeaders headers = new HttpHeaders();
@@ -20,6 +24,7 @@ public class CatService {
 
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
+        String apiUrl = "https://cataas.com";
         return restTemplate.exchange(
                 apiUrl + path,
                 HttpMethod.GET,
@@ -33,7 +38,7 @@ public class CatService {
     }
 
     public ResponseEntity<byte[]> getRandomCatByTag(String tag) {
-        String[] tags = restTemplate.getForObject(apiUrl + "/api/tags", String[].class);
+        String[] tags = catTagsService.fetchAllTags();
 
         if (tags == null || tags.length == 0) {
             return ResponseEntity.notFound().build();

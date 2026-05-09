@@ -2,6 +2,8 @@ package com.example.demo.service;
 
 import java.util.List;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -37,6 +39,7 @@ public class PostService {
         return postRepository.findAllWithComments();
     }
 
+    @Cacheable(value = "posts", key = "#id")
     public Post getById(Long id) {
         return postRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Post not found"));
     }
@@ -49,6 +52,7 @@ public class PostService {
         return postRepository.save(post);
     }
 
+    @CacheEvict(value = "posts", key = "#id")
     public Post updatePost(Long id, String email, CreatePostRequest updated) {
         Post post = postRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Post not found!"));
@@ -64,6 +68,7 @@ public class PostService {
         return postRepository.save(post);
     }
 
+    @CacheEvict(value = "posts", key = "#id")
     public void deletePost(Long id, String email) {
         Post post = postRepository.findById(id).orElseThrow(
                 () -> new ResourceNotFoundException("Post not found!"));
