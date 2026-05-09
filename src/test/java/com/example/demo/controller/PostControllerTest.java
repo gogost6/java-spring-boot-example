@@ -1,25 +1,32 @@
 package com.example.demo.controller;
 
-import com.example.demo.config.SecurityConfig;
-import com.example.demo.entity.Comment;
-import com.example.demo.entity.Post;
-import com.example.demo.service.CommentService;
-import com.example.demo.service.PostService;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+
+import java.util.List;
+import java.util.Set;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
-import java.util.List;
-
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import com.example.demo.config.SecurityConfig;
+import com.example.demo.entity.Comment;
+import com.example.demo.entity.Post;
+import com.example.demo.entity.Role;
+import com.example.demo.entity.User;
+import com.example.demo.service.CommentService;
+import com.example.demo.service.PostService;
 
 @WebMvcTest(controllers = PostController.class)
 @AutoConfigureMockMvc
@@ -37,23 +44,24 @@ class PostControllerTest {
 
     @Test
     void getAllPosts_returnsPosts() {
-        when(postService.getAllPosts()).thenReturn(List.of(
-                new Post("Title 1", "Body 1"),
-                new Post("Title 2", "Body 2")
+        User owner = new User("owner@mail.com", "pwd", Set.of(Role.USER));
+        when(postService.getAllPosts(any(Pageable.class))).thenReturn(new PageImpl<>(List.of(
+                new Post(owner, "Title 1", "Body 1"),
+                new Post(owner, "Title 2", "Body 2"))
         ));
 
-        mvc.get()
-                .uri("/api/posts")
+        mvc.get().uri("/api/posts")
                 .assertThat()
                 .hasStatusOk()
                 .bodyJson()
-                .extractingPath("$[0].title").isEqualTo("Title 1");
+                .extractingPath("$.content[0].title").isEqualTo("Title 1");
     }
 
     @Test
     void createPost_returnsPost() {
+        User owner = new User("owner@mail.com", "pwd", Set.of(Role.USER));
         when(postService.createPost(eq("owner@mail.com"), any()))
-                .thenReturn(new Post("New title", "New body"));
+                .thenReturn(new Post(owner, "New title", "New body"));
 
         mvc.post()
                 .uri("/api/posts")
@@ -92,8 +100,7 @@ class PostControllerTest {
 
     @Test
     void deletePost_returns204() {
-        when(postService.deletePost(eq(1L), eq("owner@mail.com")))
-                .thenReturn(true);
+        doNothing().when(postService).deletePost(eq(1L), eq("owner@mail.com"));
 
         mvc.delete()
                 .uri("/api/posts/1")

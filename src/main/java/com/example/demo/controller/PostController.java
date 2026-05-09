@@ -2,18 +2,30 @@ package com.example.demo.controller;
 
 import java.util.List;
 
-import com.example.demo.dto.CreatePostRequest;
-import com.example.demo.dto.PostResponse;
-import com.example.demo.entity.Comment;
-import com.example.demo.service.CommentService;
-import com.example.demo.service.PostService;
-import jakarta.validation.Valid;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.CreatePostRequest;
+import com.example.demo.dto.PostResponse;
+import com.example.demo.entity.Comment;
 import com.example.demo.entity.Post;
+import com.example.demo.service.CommentService;
+import com.example.demo.service.PostService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/posts")
@@ -28,15 +40,14 @@ public class PostController {
     }
 
     @GetMapping
-    public List<PostResponse> getAllPosts() {
-        return postService.getAllPosts()
-                .stream()
+    public Page<PostResponse> getAllPosts(
+            @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return postService.getAllPosts(pageable)
                 .map(p -> new PostResponse(
                         p.getId(),
                         p.getTitle(),
                         p.getBody(),
-                        p.getOwner().getEmail()))
-                .toList();
+                        p.getOwner().getEmail()));
     }
 
     @GetMapping("/{post_id}")

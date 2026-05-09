@@ -13,6 +13,13 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import com.example.demo.exception.ForbiddenException;
+import com.example.demo.exception.ResourceNotFoundException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -40,12 +47,13 @@ class PostServiceTest {
         Post post1 = new Post("Title 1", "Body 1");
         Post post2 = new Post("Title 2", "Body 2");
 
-        when(postRepository.findAll()).thenReturn(List.of(post1, post2));
+        Pageable pageable = PageRequest.of(0, 10);
+        when(postRepository.findAll(pageable)).thenReturn(new PageImpl<>(List.of(post1, post2)));
 
-        List<Post> result = postService.getAllPosts();
+        Page<Post> result = postService.getAllPosts(pageable);
 
-        assertEquals(2, result.size());
-        verify(postRepository).findAll();
+        assertEquals(2, result.getTotalElements());
+        verify(postRepository).findAll(pageable);
     }
 
     @Test
@@ -124,9 +132,10 @@ class PostServiceTest {
         when(postRepository.findById(1L))
                 .thenReturn(Optional.of(existingPost));
 
-        assertThrows(IllegalStateException.class, () ->
-                postService.updatePost(1L, "other@mail.com", request)
-        );
+        when(authRepository.findByEmail("other@mail.com"))
+                        .thenReturn(Optional.of(new User("other@mail.com", "pwd", Set.of(Role.USER))));
+
+        assertThrows(ForbiddenException.class, () -> postService.updatePost(1L, "other@mail.com", request));
 
         verify(postRepository).findById(1L);
         verify(postRepository, never()).save(any(Post.class));
@@ -139,9 +148,8 @@ class PostServiceTest {
         when(postRepository.findById(999L))
                 .thenReturn(Optional.empty());
 
-        assertThrows(IllegalStateException.class, () ->
-                postService.updatePost(999L, "owner@mail.com", request)
-        );
+        assertThrows(ResourceNotFoundException.class,
+                                () -> postService.updatePost(999L, "owner@mail.com", request));
 
         verify(postRepository).findById(999L);
         verify(postRepository, never()).save(any(Post.class));
@@ -177,9 +185,10 @@ class PostServiceTest {
         when(postRepository.findById(1L))
                 .thenReturn(Optional.of(existingPost));
 
-        assertThrows(IllegalStateException.class, () ->
-                postService.deletePost(1L, "other@mail.com")
-        );
+        when(authRepository.findByEmail("other@mail.com"))
+                      .thenReturn(Optional.of(new User("other@mail.com", "pwd", Set.of(Role.USER))));
+
+        assertThrows(ForbiddenException.class, () -> postService.deletePost(1L, "other@mail.com"));
 
         verify(postRepository).findById(1L);
         verify(postRepository, never()).delete(any(Post.class));

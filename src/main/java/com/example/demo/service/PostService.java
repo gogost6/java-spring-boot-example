@@ -1,5 +1,11 @@
 package com.example.demo.service;
 
+import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import com.example.demo.dto.CreatePostRequest;
 import com.example.demo.entity.Comment;
 import com.example.demo.entity.Post;
@@ -9,9 +15,6 @@ import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.AuthRepository;
 import com.example.demo.repository.CommentRepository;
 import com.example.demo.repository.PostRepository;
-import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 public class PostService {
@@ -19,14 +22,15 @@ public class PostService {
     private final AuthRepository authRepository;
     private final CommentRepository commentRepository;
 
-    public PostService(PostRepository postRepository, AuthRepository authRepository,  CommentRepository commentRepository) {
+    public PostService(PostRepository postRepository, AuthRepository authRepository,
+            CommentRepository commentRepository) {
         this.postRepository = postRepository;
         this.authRepository = authRepository;
         this.commentRepository = commentRepository;
     }
 
-    public List<Post> getAllPosts() {
-        return postRepository.findAll();
+    public Page<Post> getAllPosts(Pageable pageable) {
+        return postRepository.findAll(pageable);
     }
 
     public List<Post> getAllPostsWithComments() {
