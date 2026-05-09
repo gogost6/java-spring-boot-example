@@ -1,4 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DatabaseMigrationSettings" lastSelectedDirectory="$PROJECT_DIR$/src/main/resources/db/migration" />
+  <component name="JpaLiquibaseChangesConfig">
+    <exclude-change idName="posts#body" tagName="addNotNullConstraint" />
+    <exclude-change idName="comment#content" tagName="addNotNullConstraint" />
+    <exclude-change idName="posts#title" tagName="addNotNullConstraint" />
+    <exclude-change idName="comment#created_at" tagName="addColumn" />
+    <exclude-change idName="comment#updated_at" tagName="addColumn" />
+    <exclude-change idName="posts#created_at" tagName="addColumn" />
+    <exclude-change idName="posts#updated_at" tagName="addColumn" />
+    <exclude-change idName="users#created_at" tagName="addColumn" />
+    <exclude-change idName="users#updated_at" tagName="addColumn" />
+  </component>
 </project>

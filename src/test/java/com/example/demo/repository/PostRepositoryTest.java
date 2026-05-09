@@ -25,12 +25,16 @@ public class PostRepositoryTest {
     AuthRepository authRepository;
 
     @Autowired
+    RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
     CommentRepository commentRepository;
 
     @BeforeEach
     void setUp() {
         commentRepository.deleteAll();
         postRepository.deleteAll();
+        refreshTokenRepository.deleteAll();
         authRepository.deleteAll();
     }
 

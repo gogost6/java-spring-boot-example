@@ -1,14 +1,15 @@
 package com.example.demo.service;
 
+import java.util.Optional;
+import java.util.Set;
+
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.example.demo.dto.AuthRequest;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.User;
 import com.example.demo.repository.AuthRepository;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
-import java.util.Optional;
-import java.util.Set;
 
 @Service
 public class AuthService {
@@ -52,7 +53,6 @@ public class AuthService {
         return user;
     }
 
-
     public User updateEmail(String email, String newEmail) {
         if (email.equals(newEmail)) {
             throw new IllegalStateException("Old email same as new email!");
@@ -90,5 +90,10 @@ public class AuthService {
         user.getRoles().add(role);
 
         return authRepository.save(user);
+    }
+
+    public User findByEmail(String email) {
+        return authRepository.findByEmail(email)
+                .orElseThrow(() -> new IllegalStateException("User not found"));
     }
 }
