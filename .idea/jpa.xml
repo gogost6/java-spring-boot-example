@@ -4,4 +4,5 @@
     <option name="reLastEntityCreationPackage" value="src/main/java/com/example/demo" />
     <option name="reverseEngineeringLastDbConnectionId" value="9567775b-7dbf-4769-9a5f-4580112bf220" />
   </component>
+  <component name="JpaPluginProjectSettings" isShowLibraryClassesInOrmView="true" />
 </project>
