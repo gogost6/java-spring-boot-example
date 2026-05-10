@@ -1,10 +1,18 @@
 package com.example.demo.entity;
 
-import jakarta.persistence.*;
+import java.time.LocalDateTime;
+
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
-import java.time.LocalDateTime;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
 @Entity
 public class Comment {
@@ -15,6 +23,11 @@ public class Comment {
     @ManyToOne
     @JoinColumn(name = "post_id")
     private Post post;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_id")
+    private User owner;
+
     @Column(nullable = false)
     private String content;
     @CreationTimestamp
@@ -22,10 +35,12 @@ public class Comment {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    public Comment() {}
+    public Comment() {
+    }
 
-    public Comment(Post post, String content) {
+    public Comment(Post post, User owner, String content) {
         this.post = post;
+        this.owner = owner;
         this.content = content;
     }
 
@@ -35,6 +50,14 @@ public class Comment {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public User getOwner() {
+        return owner;
+    }
+
+    public void setOwner(User owner) {
+        this.owner = owner;
     }
 
     public String getContent() {

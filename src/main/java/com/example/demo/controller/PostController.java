@@ -18,9 +18,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.demo.dto.CommentResponse;
 import com.example.demo.dto.CreatePostRequest;
 import com.example.demo.dto.PostResponse;
-import com.example.demo.entity.Comment;
 import com.example.demo.entity.Post;
 import com.example.demo.service.CommentService;
 import com.example.demo.service.PostService;
@@ -57,7 +57,7 @@ public class PostController {
     }
 
     @GetMapping("/{post_id}/comments")
-    public List<Comment> getCommentsByPostId(@PathVariable Long post_id) {
+    public List<CommentResponse> getCommentsByPostId(@PathVariable Long post_id) {
         return commentService.getCommentsByPostId(post_id);
     }
 
@@ -68,7 +68,8 @@ public class PostController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Void> updatePost(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt, @Valid @RequestBody CreatePostRequest updated) {
+    public ResponseEntity<Void> updatePost(@PathVariable Long id, @AuthenticationPrincipal Jwt jwt,
+            @Valid @RequestBody CreatePostRequest updated) {
         postService.updatePost(id, jwt.getSubject(), updated);
         return ResponseEntity.ok().build();
     }

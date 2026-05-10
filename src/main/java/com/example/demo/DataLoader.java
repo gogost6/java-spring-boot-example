@@ -32,8 +32,8 @@ public class DataLoader implements CommandLineRunner {
             User user = authService.register(authRequest);
             Post postOne = postRepository.save(new Post(user, "First post", "Hello from PostgreSQL"));
             Post postTwo = postRepository.save(new Post(user, "Second post", "Spring Boot is connected"));
-            commentRepository.save(new Comment(postOne, "First comment"));
-            commentRepository.save(new Comment(postTwo, "Second comment"));
+            commentRepository.save(new Comment(postOne, user, "First comment"));
+            commentRepository.save(new Comment(postTwo, user, "Second comment"));
         }
     }
 }

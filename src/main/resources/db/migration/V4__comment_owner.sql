@@ -1,0 +1,8 @@
+ALTER TABLE comment
+    ADD owner_id BIGINT;
+
+ALTER TABLE comment
+    ADD CONSTRAINT FK_COMMENT_ON_OWNER FOREIGN KEY (owner_id) REFERENCES users (id);
+
+ALTER TABLE comment
+    ALTER COLUMN content SET NOT NULL;

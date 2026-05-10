@@ -9,6 +9,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import java.util.List;
 import java.util.Set;
 
+import com.example.demo.dto.CommentResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -111,11 +112,14 @@ class PostControllerTest {
 
     @Test
     void getCommentsByPostId_returnsComments() {
-        Comment comment = new Comment();
-        comment.setContent("Hello");
+        User user = new User("mail@example.com",  "pwd", Set.of(Role.USER));
+        Comment c = new Comment();
+        c.setContent("Hello");
+        c.setOwner(user);
+        CommentResponse commentResponse = new CommentResponse(c.getId(), c.getContent(), c.getOwner().getEmail(), c.getCreatedAt(), c.getUpdatedAt());
 
         when(commentService.getCommentsByPostId(1L))
-                .thenReturn(List.of(comment));
+                .thenReturn(List.of(commentResponse));
 
         mvc.get()
                 .uri("/api/posts/1/comments")
