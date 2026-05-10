@@ -30,15 +30,24 @@ public class SecurityConfig {
                                 "/api/auth/register",
                                 "/api/auth/login",
                                 "/api/auth/refresh",
+                                "/api/auth/logout",
                                 "/api/cat/**",
                                 "/cat-page",
                                 "/cat-image"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                         .requestMatchers(HttpMethod.GET, "/api/posts/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/comment/**").permitAll()
+
                         .requestMatchers(HttpMethod.POST, "/api/posts/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/api/posts/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/posts/**").authenticated()
-                        .requestMatchers(HttpMethod.GET, "/api/comment/**").permitAll()
+
+                        .requestMatchers(HttpMethod.POST, "/api/comment/**").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/comment/**").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/comment/**").authenticated()
+
                         .requestMatchers( "/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )
