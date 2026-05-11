@@ -48,6 +48,10 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/api/comment/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/api/comment/**").authenticated()
 
+                        .requestMatchers(HttpMethod.GET, "/api/users/me").authenticated()
+                        .requestMatchers(HttpMethod.DELETE, "/api/users/me").authenticated()
+                        .requestMatchers(HttpMethod.GET, "/api/users/**").hasRole("ADMIN")
+
                         .requestMatchers( "/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated()
                 )

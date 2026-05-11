@@ -5,20 +5,33 @@ import java.util.Set;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.demo.dto.AuthRequest;
 import com.example.demo.entity.Role;
 import com.example.demo.entity.User;
+import com.example.demo.exception.ResourceNotFoundException;
 import com.example.demo.repository.AuthRepository;
+import com.example.demo.repository.CommentRepository;
+import com.example.demo.repository.PostRepository;
+import com.example.demo.repository.RefreshTokenRepository;
 
 @Service
 public class AuthService {
     private final AuthRepository authRepository;
     private final PasswordEncoder passwordEncoder;
+    private final PostRepository postRepository;
+    private final CommentRepository commentRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
-    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder) {
+    public AuthService(AuthRepository authRepository, PasswordEncoder passwordEncoder,
+            PostRepository postRepository, CommentRepository commentRepository,
+            RefreshTokenRepository refreshTokenRepository) {
         this.authRepository = authRepository;
         this.passwordEncoder = passwordEncoder;
+        this.postRepository = postRepository;
+        this.commentRepository = commentRepository;
+        this.refreshTokenRepository = refreshTokenRepository;
     }
 
     public User register(AuthRequest authRequest) {
@@ -95,5 +108,15 @@ public class AuthService {
     public User findByEmail(String email) {
         return authRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalStateException("User not found"));
+    }
+
+    @Transactional
+    public void deleteUser(String email) {
+        User user = authRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        commentRepository.deleteByOwner(user);
+        postRepository.deleteByOwner(user);
+        refreshTokenRepository.deleteByUser(user);
+        authRepository.delete(user);
     }
 }
