@@ -1,7 +1,5 @@
 package com.example.demo.controller;
 
-import java.util.List;
-
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -16,6 +14,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.dto.CommentResponse;
@@ -41,13 +40,16 @@ public class PostController {
 
     @GetMapping
     public Page<PostResponse> getAllPosts(
+            @RequestParam(required = false) String search,
             @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
-        return postService.getAllPosts(pageable)
-                .map(p -> new PostResponse(
-                        p.getId(),
-                        p.getTitle(),
-                        p.getBody(),
-                        p.getOwner().getEmail()));
+        Page<Post> page = (search != null && !search.isBlank())
+                ? postService.searchPosts(search, pageable)
+                : postService.getAllPosts(pageable);
+        return page.map(p -> new PostResponse(
+                p.getId(),
+                p.getTitle(),
+                p.getBody(),
+                p.getOwner().getEmail()));
     }
 
     @GetMapping("/{post_id}")
@@ -57,8 +59,10 @@ public class PostController {
     }
 
     @GetMapping("/{post_id}/comments")
-    public List<CommentResponse> getCommentsByPostId(@PathVariable Long post_id) {
-        return commentService.getCommentsByPostId(post_id);
+    public Page<CommentResponse> getCommentsByPostId(
+            @PathVariable Long post_id,
+            @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return commentService.getCommentsByPostId(post_id, pageable);
     }
 
     @PostMapping

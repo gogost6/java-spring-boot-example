@@ -2,6 +2,8 @@ package com.example.demo.service;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.dto.CommentResponse;
@@ -37,6 +39,13 @@ public class CommentService {
                 .orElseThrow(() -> new ResourceNotFoundException("Post not found"));
         return this.commentRepository.findByPostId(post.getId())
                 .stream().map(this::toResponse).toList();
+    }
+
+    public Page<CommentResponse> getCommentsByPostId(Long postId, Pageable pageable) {
+        if (!postRepository.existsById(postId)) {
+            throw new ResourceNotFoundException("Post not found");
+        }
+        return commentRepository.findByPostId(postId, pageable).map(this::toResponse);
     }
 
     public CommentResponse getCommentById(Long commentId) {

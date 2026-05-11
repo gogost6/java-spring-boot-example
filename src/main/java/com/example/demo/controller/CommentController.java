@@ -1,7 +1,9 @@
 package com.example.demo.controller;
 
-import java.util.List;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,8 +31,10 @@ public class CommentController {
     }
 
     @GetMapping("/{post_id}/post")
-    public List<CommentResponse> getAllByPostId(@PathVariable Long post_id) {
-        return this.commentService.getCommentsByPostId(post_id);
+    public Page<CommentResponse> getAllByPostId(
+            @PathVariable Long post_id,
+            @PageableDefault(sort = "id", direction = Sort.Direction.DESC) Pageable pageable) {
+        return this.commentService.getCommentsByPostId(post_id, pageable);
     }
 
     @GetMapping("/{comment_id}")

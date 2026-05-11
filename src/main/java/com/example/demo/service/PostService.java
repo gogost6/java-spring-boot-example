@@ -35,6 +35,10 @@ public class PostService {
         return postRepository.findAll(pageable);
     }
 
+    public Page<Post> searchPosts(String search, Pageable pageable) {
+        return postRepository.findBySearch(search, pageable);
+    }
+
     public List<Post> getAllPostsWithComments() {
         return postRepository.findAllWithComments();
     }
