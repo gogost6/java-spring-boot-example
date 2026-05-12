@@ -60,6 +60,14 @@ public class Comment {
         this.owner = owner;
     }
 
+    public Post getPost() {
+        return post;
+    }
+
+    public void setPost(Post post) {
+        this.post = post;
+    }
+
     public String getContent() {
         return content;
     }
