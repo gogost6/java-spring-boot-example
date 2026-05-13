@@ -33,7 +33,9 @@ public class SecurityConfig {
                                 "/api/auth/logout",
                                 "/api/cat/**",
                                 "/cat-page",
-                                "/cat-image"
+                                "/cat-image",
+                                "/swagger-ui/**",
+                                "/v3/api-docs/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
