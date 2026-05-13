@@ -1,19 +1,29 @@
 package com.example.demo.service;
 
-import org.springframework.http.*;
+import java.time.Duration;
+import java.util.List;
+
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-
-import java.util.List;
 
 @Service
 public class CatService {
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate;
     private final CatTagsService catTagsService;
 
     public CatService(CatTagsService catTagsService) {
         this.catTagsService = catTagsService;
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(Duration.ofSeconds(3));
+        factory.setReadTimeout(Duration.ofSeconds(5));
+        this.restTemplate = new RestTemplate(factory);
     }
 
     private ResponseEntity<byte[]> fetchImage(String path) {
@@ -29,8 +39,7 @@ public class CatService {
                 apiUrl + path,
                 HttpMethod.GET,
                 entity,
-                byte[].class
-        );
+                byte[].class);
     }
 
     public ResponseEntity<byte[]> getRandomCatImage() {
