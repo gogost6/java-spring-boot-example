@@ -13,12 +13,18 @@ COPY src src
 
 RUN ./mvnw clean package -DskipTests
 
+# Extract layered JAR for smaller, cache-friendly image layers
+RUN java -Djarmode=tools -jar target/*.jar extract --destination target/extracted
+
 FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-COPY --from=builder /app/target/*.jar app.jar
+COPY --from=builder /app/target/extracted/dependencies/ ./
+COPY --from=builder /app/target/extracted/spring-boot-loader/ ./
+COPY --from=builder /app/target/extracted/snapshot-dependencies/ ./
+COPY --from=builder /app/target/extracted/application/ ./
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Dspring.profiles.active=prod", "org.springframework.boot.loader.launch.JarLauncher"]
