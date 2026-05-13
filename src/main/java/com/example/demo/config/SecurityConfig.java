@@ -35,7 +35,8 @@ public class SecurityConfig {
                                 "/cat-page",
                                 "/cat-image",
                                 "/swagger-ui/**",
-                                "/v3/api-docs/**"
+                                "/v3/api-docs/**",
+                                "/actuator/**"
                         ).permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
 
