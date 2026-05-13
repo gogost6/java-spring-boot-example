@@ -3,6 +3,7 @@ package com.example.demo.service;
 import java.time.Duration;
 import java.util.List;
 
+import org.slf4j.MDC;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -11,6 +12,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+
+import com.example.demo.config.CorrelationIdFilter;
 
 @Service
 public class CatService {
@@ -31,6 +34,11 @@ public class CatService {
 
         // catass.com needs accept params otherwise it returns a JSON!
         headers.setAccept(List.of(MediaType.ALL));
+
+        String correlationId = MDC.get(CorrelationIdFilter.MDC_KEY);
+        if (correlationId != null) {
+            headers.set(CorrelationIdFilter.CORRELATION_ID_HEADER, correlationId);
+        }
 
         HttpEntity<Void> entity = new HttpEntity<>(headers);
 
