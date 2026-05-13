@@ -14,7 +14,7 @@ COPY src src
 RUN ./mvnw clean package -DskipTests
 
 # Extract layered JAR for smaller, cache-friendly image layers
-RUN java -Djarmode=tools -jar target/*.jar extract --destination target/extracted
+RUN java -Djarmode=tools -jar target/*.jar extract --layers --launcher --destination target/extracted
 
 FROM eclipse-temurin:21-jre
 
