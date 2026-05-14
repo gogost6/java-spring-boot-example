@@ -118,14 +118,14 @@ class PostControllerTest {
         c.setOwner(user);
         CommentResponse commentResponse = new CommentResponse(c.getId(), c.getContent(), c.getOwner().getEmail(), c.getCreatedAt(), c.getUpdatedAt());
 
-        when(commentService.getCommentsByPostId(1L))
-                .thenReturn(List.of(commentResponse));
+        when(commentService.getCommentsByPostId(eq(1L), any(Pageable.class)))
+                .thenReturn(new PageImpl<>(List.of(commentResponse)));
 
         mvc.get()
                 .uri("/api/posts/1/comments")
                 .assertThat()
                 .hasStatusOk()
                 .bodyJson()
-                .extractingPath("$[0].content").isEqualTo("Hello");
+                .extractingPath("$.content[0].content").isEqualTo("Hello");
     }
 }

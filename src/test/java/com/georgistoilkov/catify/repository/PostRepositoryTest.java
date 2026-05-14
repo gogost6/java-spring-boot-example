@@ -30,8 +30,12 @@ public class PostRepositoryTest {
     @Autowired
     CommentRepository commentRepository;
 
+    @Autowired
+    CalendarPurchaseRepository calendarPurchaseRepository;
+
     @BeforeEach
     void setUp() {
+        calendarPurchaseRepository.deleteAll();
         commentRepository.deleteAll();
         postRepository.deleteAll();
         refreshTokenRepository.deleteAll();
@@ -89,9 +93,10 @@ public class PostRepositoryTest {
         post.setTitle("New title");
         postRepository.save(post);
 
-        Post updated = postRepository.findById(post.getId()).get();
+        Optional<Post> postFound = postRepository.findById(post.getId());
 
-        Assertions.assertEquals("New title", updated.getTitle());
+        Assertions.assertTrue(postFound.isPresent());
+        Assertions.assertEquals("New title", postFound.get().getTitle());
     }
 
     @Test

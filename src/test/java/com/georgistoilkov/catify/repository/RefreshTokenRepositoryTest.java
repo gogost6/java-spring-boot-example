@@ -33,8 +33,12 @@ class RefreshTokenRepositoryTest {
     @Autowired
     private CommentRepository commentRepository;
 
+    @Autowired
+    private CalendarPurchaseRepository  calendarPurchaseRepository;
+
     @BeforeEach
     void setUp() {
+        calendarPurchaseRepository.deleteAll();
         refreshTokenRepository.deleteAll();
         commentRepository.deleteAll();
         postRepository.deleteAll();
