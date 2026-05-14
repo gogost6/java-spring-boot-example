@@ -32,6 +32,7 @@ public class SecurityConfig {
                                 "/api/auth/refresh",
                                 "/api/auth/logout",
                                 "/api/cat/**",
+                                "/api/payments/webhook",
                                 "/cat-page",
                                 "/cat-image",
                                 "/swagger-ui/**",
