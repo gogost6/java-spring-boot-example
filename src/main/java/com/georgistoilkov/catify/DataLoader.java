@@ -30,10 +30,10 @@ public class DataLoader implements CommandLineRunner {
         if (postRepository.count() == 0) {
             AuthRequest authRequest = new AuthRequest("example@gmail.com", "Password$123456");
             User user = authService.register(authRequest);
-            Post postOne = postRepository.save(new Post(user, "First post", "Hello from PostgreSQL"));
-            Post postTwo = postRepository.save(new Post(user, "Second post", "Spring Boot is connected"));
-            commentRepository.save(new Comment(postOne, user, "First comment"));
-            commentRepository.save(new Comment(postTwo, user, "Second comment"));
+            Post postOne = postRepository.save(new Post(user, "Bengal cat", "The Bengal cat is a breed of hybrid cat created from crossbreeding an Asian leopard cat to domestic cats"));
+            Post postTwo = postRepository.save(new Post(user, "Maine Coon", "The Maine Coon is a large domesticated cat breed"));
+            commentRepository.save(new Comment(postOne, user, "Lol, I love them!"));
+            commentRepository.save(new Comment(postTwo, user, "I have one and it's like a dog!"));
         }
     }
 }
