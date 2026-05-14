@@ -24,6 +24,8 @@ jobs:
       SPRING_DATASOURCE_USERNAME: ${{ secrets.SPRING_DATASOURCE_USERNAME }}
       SPRING_DATASOURCE_PASSWORD: ${{ secrets.SPRING_DATASOURCE_PASSWORD }}
       JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_SECRET_KEY }}
+      STRIPE_WEBHOOK_SECRET: ${{ secrets.STRIPE_WEBHOOK_SECRET }}
 
     steps:
       - name: Checkout code
@@ -53,6 +55,8 @@ jobs:
           export SPRING_DATASOURCE_USERNAME='$SPRING_DATASOURCE_USERNAME' &&
           export SPRING_DATASOURCE_PASSWORD='$SPRING_DATASOURCE_PASSWORD' &&
           export JWT_SECRET='$JWT_SECRET' &&
+          export STRIPE_SECRET_KEY='$STRIPE_SECRET_KEY' &&
+          export STRIPE_WEBHOOK_SECRET='$STRIPE_WEBHOOK_SECRET' &&
           docker compose pull &&
           docker compose up -d &&
           docker image prune -f
