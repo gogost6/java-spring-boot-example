@@ -1,5 +1,6 @@
 package com.example.demo.service;
 
+import com.stripe.exception.EventDataObjectDeserializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -20,22 +21,29 @@ public class PaymentService {
 
     private static final Logger log = LoggerFactory.getLogger(PaymentService.class);
 
+    private final CalendarService calendarService;
+
     @Value("${stripe.secret-key}")
     private String secretKey;
 
     @Value("${stripe.webhook-secret}")
     private String webhookSecret;
 
+    public PaymentService(CalendarService calendarService) {
+        this.calendarService = calendarService;
+    }
+
     @PostConstruct
     public void init() {
         Stripe.apiKey = secretKey;
     }
 
-    public CheckoutResponse createPaymentIntent() throws Exception {
+    public CheckoutResponse createPaymentIntent(String email) throws Exception {
         PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
                 .setAmount(999L) // $9.99 in cents
                 .setCurrency("usd")
                 .setDescription("Cat Calendar")
+                .putMetadata("email", email)
                 .setAutomaticPaymentMethods(
                         PaymentIntentCreateParams.AutomaticPaymentMethods.builder()
                                 .setEnabled(true)
@@ -56,12 +64,24 @@ public class PaymentService {
 
         switch (event.getType()) {
             case "payment_intent.succeeded" -> {
-                log.info("Payment succeeded: {}", event.getId());
-                // TODO: fulfill order — e.g. mark calendar as purchased for user
+                var deserializer = event.getDataObjectDeserializer();
+                PaymentIntent intent = deserializer.getObject()
+                        .map(o -> (PaymentIntent) o)
+                        .orElseGet(() -> {
+                            try {
+                                return (PaymentIntent) deserializer.deserializeUnsafe();
+                            } catch (EventDataObjectDeserializationException e) {
+                                throw new RuntimeException(e);
+                            }
+                        });
+                String email = intent.getMetadata().get("email");
+                if (email != null) {
+                    calendarService.fulfillPurchase(email, intent.getId());
+                } else {
+                    log.warn("payment_intent.succeeded missing email metadata: {}", intent.getId());
+                }
             }
-            case "payment_intent.payment_failed" -> {
-                log.warn("Payment failed: {}", event.getId());
-            }
+            case "payment_intent.payment_failed" -> log.warn("Payment failed: {}", event.getId());
             default -> log.debug("Unhandled Stripe event: {}", event.getType());
         }
     }

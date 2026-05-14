@@ -11,5 +11,7 @@
     <exclude-change idName="posts#updated_at" tagName="addColumn" />
     <exclude-change idName="users#created_at" tagName="addColumn" />
     <exclude-change idName="users#updated_at" tagName="addColumn" />
+    <exclude-change idName="FK_COMMENT_ON_OWNER" tagName="addForeignKeyConstraint" />
+    <exclude-change idName="comment#owner_id" tagName="addColumn" />
   </component>
 </project>
