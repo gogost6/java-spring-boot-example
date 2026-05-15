@@ -2,7 +2,7 @@
 
 A RESTful backend built with Spring Boot 4 and Java 21. Catify is a community platform where users can create posts, leave comments, browse random cat content, and purchase a downloadable cat calendar via Stripe.
 
-**Live:** [https://vps.moqtasvatba.online](https://vps.moqtasvatba.online) · **API:** [https://vpsapi.moqtasvatba.bg](https://vpsapi.moqtasvatba.bg) · **Swagger:** [https://vpsapi.moqtasvatba.bg/swagger-ui/index.html](https://vpsapi.moqtasvatba.bg/swagger-ui/index.html)
+**Live:** [https://vps.moqtasvatba.online](https://vps.moqtasvatba.online) · **API:** [https://vpsapi.moqtasvatba.online](https://vpsapi.moqtasvatba.online) · **Swagger:** [https://vpsapi.moqtasvatba.online/swagger-ui/index.html](https://vpsapi.moqtasvatba.online/swagger-ui/index.html)
 
 ## Tech Stack
 
