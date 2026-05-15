@@ -1,6 +1,5 @@
 package com.georgistoilkov.catify.service;
 
-import com.stripe.exception.EventDataObjectDeserializationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -8,11 +7,12 @@ import org.springframework.stereotype.Service;
 
 import com.georgistoilkov.catify.dto.CheckoutResponse;
 import com.stripe.Stripe;
+import com.stripe.exception.EventDataObjectDeserializationException;
 import com.stripe.exception.SignatureVerificationException;
 import com.stripe.model.Event;
-import com.stripe.model.PaymentIntent;
+import com.stripe.model.checkout.Session;
 import com.stripe.net.Webhook;
-import com.stripe.param.PaymentIntentCreateParams;
+import com.stripe.param.checkout.SessionCreateParams;
 
 import jakarta.annotation.PostConstruct;
 
@@ -38,20 +38,29 @@ public class PaymentService {
         Stripe.apiKey = secretKey;
     }
 
-    public CheckoutResponse createPaymentIntent(String email) throws Exception {
-        PaymentIntentCreateParams params = PaymentIntentCreateParams.builder()
-                .setAmount(999L) // $9.99 in cents
-                .setCurrency("usd")
-                .setDescription("Cat Calendar")
-                .putMetadata("email", email)
-                .setAutomaticPaymentMethods(
-                        PaymentIntentCreateParams.AutomaticPaymentMethods.builder()
-                                .setEnabled(true)
+    public CheckoutResponse createCheckoutSession(String email, String returnUrl) throws Exception {
+        SessionCreateParams params = SessionCreateParams.builder()
+                .addLineItem(
+                        SessionCreateParams.LineItem.builder()
+                                .setPriceData(
+                                        SessionCreateParams.LineItem.PriceData.builder()
+                                                .setCurrency("usd")
+                                                .setProductData(
+                                                        SessionCreateParams.LineItem.PriceData.ProductData.builder()
+                                                                .setName("Cat Calendar")
+                                                                .build())
+                                                .setUnitAmount(999L)
+                                                .build())
+                                .setQuantity(1L)
                                 .build())
+                .setMode(SessionCreateParams.Mode.PAYMENT)
+                .setUiMode(SessionCreateParams.UiMode.EMBEDDED_PAGE)
+                .setCustomerEmail(email)
+                .setReturnUrl(returnUrl)
                 .build();
 
-        PaymentIntent intent = PaymentIntent.create(params);
-        return new CheckoutResponse(intent.getClientSecret());
+        Session session = Session.create(params);
+        return new CheckoutResponse(session.getClientSecret());
     }
 
     public void handleWebhook(String payload, String sigHeader) throws Exception {
@@ -63,25 +72,26 @@ public class PaymentService {
         }
 
         switch (event.getType()) {
-            case "payment_intent.succeeded" -> {
+            case "checkout.session.completed" -> {
                 var deserializer = event.getDataObjectDeserializer();
-                PaymentIntent intent = deserializer.getObject()
-                        .map(o -> (PaymentIntent) o)
+                Session session = deserializer.getObject()
+                        .map(o -> (Session) o)
                         .orElseGet(() -> {
                             try {
-                                return (PaymentIntent) deserializer.deserializeUnsafe();
+                                return (Session) deserializer.deserializeUnsafe();
                             } catch (EventDataObjectDeserializationException e) {
                                 throw new RuntimeException(e);
                             }
                         });
-                String email = intent.getMetadata().get("email");
+                String email = session.getCustomerEmail();
                 if (email != null) {
-                    calendarService.fulfillPurchase(email, intent.getId());
+                    calendarService.fulfillPurchase(email, session.getPaymentIntent());
                 } else {
-                    log.warn("payment_intent.succeeded missing email metadata: {}", intent.getId());
+                    log.warn("checkout.session.completed missing customer email: {}", session.getId());
                 }
             }
-            case "payment_intent.payment_failed" -> log.warn("Payment failed: {}", event.getId());
+            case "checkout.session.async_payment_failed" ->
+                log.warn("Async payment failed for session: {}", event.getId());
             default -> log.debug("Unhandled Stripe event: {}", event.getType());
         }
     }

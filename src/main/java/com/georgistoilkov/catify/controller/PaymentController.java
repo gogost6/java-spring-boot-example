@@ -32,8 +32,10 @@ public class PaymentController {
     }
 
     @PostMapping("/checkout")
-    public ResponseEntity<CheckoutResponse> checkout(@AuthenticationPrincipal Jwt jwt) throws Exception {
-        return ResponseEntity.ok(paymentService.createPaymentIntent(jwt.getSubject()));
+    public ResponseEntity<CheckoutResponse> checkout(
+            @AuthenticationPrincipal Jwt jwt,
+            @RequestBody Map<String, String> body) throws Exception {
+        return ResponseEntity.ok(paymentService.createCheckoutSession(jwt.getSubject(), body.get("returnUrl")));
     }
 
     @GetMapping("/calendar/status")
